@@ -780,13 +780,13 @@ telegram = ["requests"]
 
 [[package]]
 name = "trio"
-version = "0.26.0"
+version = "0.27.0"
 description = "A friendly Python library for async concurrency and I/O"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "trio-0.26.0-py3-none-any.whl", hash = "sha256:bb9c1b259591af941fccfbabbdc65bc7ed764bd2db76428454c894cd5e3d2032"},
-    {file = "trio-0.26.0.tar.gz", hash = "sha256:67c5ec3265dd4abc7b1d1ab9ca4fe4c25b896f9c93dac73713778adab487f9c4"},
+    {file = "trio-0.27.0-py3-none-any.whl", hash = "sha256:68eabbcf8f457d925df62da780eff15ff5dc68fd6b367e2dde59f7aaf2a0b884"},
+    {file = "trio-0.27.0.tar.gz", hash = "sha256:1dcc95ab1726b2da054afea8fd761af74bad79bd52381b84eae408e983c76831"},
 ]
 
 [package.dependencies]
@@ -846,4 +846,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "c9e00cf8a810cdc7b68f998cf3558e7dd3522126f2ec0613a23cca5ef501bfa7"
+content-hash = "d6e29aa02ce8e484c86c8b4bb12b0b3b608fb16d77dfdcfa7e322cc6f4dfc083"
