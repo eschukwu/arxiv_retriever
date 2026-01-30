@@ -8,7 +8,7 @@ import trio
 import httpx
 
 WAIT_TIME = 3  # number of seconds to wait between calls
-
+BASE_URL = "https://export.arxiv.org/api/query?"
 
 async def rate_limited_get(client: httpx.AsyncClient, url: str) -> httpx.Response:
     """Make an asynchronous GET request with rate limiting."""
@@ -27,7 +27,6 @@ async def fetch_papers(categories: List[str], limit: int, authors: Optional[List
     :param author_logic: Logic to use for multiple authors ('AND' or 'OR', default is 'AND')
     :return: List of dictionaries containing paper information
     """
-    base_url = "http://export.arxiv.org/api/query?"
     papers = []
     start = 0  # index of the first returned result
     max_results_per_query = 100
@@ -43,7 +42,7 @@ async def fetch_papers(categories: List[str], limit: int, authors: Optional[List
     async with httpx.AsyncClient() as client:
         while start < limit:
             query = f"search_query={category_query}{author_query}&sortBy=submittedDate&sortOrder=descending&start={start}&max_results={max_results_per_query}"
-            response = await rate_limited_get(client, base_url + query)
+            response = await rate_limited_get(client, BASE_URL + query)
 
             if response.status_code == 200:
                 papers.extend(parse_arxiv_response(response.text))
@@ -64,7 +63,6 @@ async def search_paper_by_title(title: str, limit: int, authors: Optional[List[s
     :param author_logic: Logic to use for multiple authors ('AND' or 'OR', default is 'AND')
     :return: List of dictionaries containing paper information
     """
-    base_url = "http://export.arxiv.org/api/query?"
     encoded_title = urllib.parse.quote_plus(title)
     papers = []
     start = 0
@@ -80,8 +78,8 @@ async def search_paper_by_title(title: str, limit: int, authors: Optional[List[s
 
     async with httpx.AsyncClient() as client:
         while start < limit:
-            query = f"search_query={title_query}{author_query}&sortBy=relevance&sortOrder=descending&start={start}&max_results={max_results_per_query}" if authors else f"search_query={title_query}&sortBy=relevance&sortOrder=descending&start={start}&max_results={max_results_per_query}"
-            response = await rate_limited_get(client, base_url + query)
+            query = f"search_query={title_query}{author_query}&sortBy=relevance&sortOrder=descending&start={start}&max_results={max_results_per_query}"
+            response = await rate_limited_get(client, BASE_URL + query)
 
             if response.status_code == 200:
                 papers.extend(parse_arxiv_response(response.text))

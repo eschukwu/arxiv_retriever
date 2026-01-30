@@ -1,5 +1,5 @@
 from typing import List, Dict
-from arxiv_retriever.rag.llm_interface import get_llm_response
+from arxiv_retriever.summary_util.llm_interface import get_llm_response
 
 
 # Current focus is on extracting essential info from paper abstract.

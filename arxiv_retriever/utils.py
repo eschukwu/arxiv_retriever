@@ -1,7 +1,9 @@
 import os
 from typing import List, Dict
 import typer
-from arxiv_retriever.rag.extractor import extract_essential_info
+from openai import OpenAIError
+
+from arxiv_retriever.summary_util.extractor import extract_essential_info
 from arxiv_retriever.fetcher import download_papers
 
 
@@ -35,7 +37,10 @@ async def process_papers(papers: List[Dict]):
     extract_paper_metadata(papers)
 
     if typer.confirm("\nWould you like to summarize these papers?"):
-        summarize_papers(papers)
+        try:
+            summarize_papers(papers)
+        except OpenAIError as e:
+            typer.echo(e)
 
     if typer.confirm("\nWould you like to download these papers?"):
         default_dir = './arxiv_downloads'
