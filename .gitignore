@@ -1,5 +1,9 @@
 # default folder where local axiv papers are downloaded
 axiv_downloads/
+arxiv_summaries/
+arxiv_downloads/
+
+CLAUDE.MD
 
 # Mac
 .DS_Store
