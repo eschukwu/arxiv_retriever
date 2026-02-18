@@ -26,6 +26,14 @@ def test_extract_paper_metadata_output(runner, mocker):
     ]
     mocker.patch("arxiv_retriever.cli.fetch_papers", mock_fetch)
 
+    # Mock process_papers to only display metadata (skip interactive prompts)
+    from arxiv_retriever.utils import extract_paper_metadata
+
+    async def mock_process_papers(papers, model=None):
+        extract_paper_metadata(papers)
+
+    mocker.patch("arxiv_retriever.cli.process_papers", mock_process_papers)
+
     result = runner.invoke(app, ["fetch", "cs.AI", "--limit", "1"])
 
     assert result.exit_code == 0

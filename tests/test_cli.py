@@ -86,6 +86,7 @@ async def test_search_command_success(runner, mocker):
 async def test_download_command_success(runner, mocker):
     mock_download_from_links = mocker.AsyncMock()
     mocker.patch('arxiv_retriever.cli.download_from_links', mock_download_from_links)
+    mocker.patch('arxiv_retriever.cli.typer.prompt', return_value='./test_downloads')
 
     result = runner.invoke(app, ["download", "http://arxiv.org/abs/2407.0001", "--download-dir", "./test_downloads"])
 
