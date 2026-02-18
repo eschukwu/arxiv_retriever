@@ -3,7 +3,7 @@
 ## Status: Maintenance Mode
 
 **Note:** This project is currently in maintenance mode. While I am not actively developing new features, I will continue
-to address critical issues and security vulnerabilities as time permits. Users are welcome to fork the repository if 
+to address critical issues and security vulnerabilities as time permits. Users are welcome to fork the repository if
 they wish to extend its functionality. Please refer to [Maintenance Policy](#maintenance-policy) for more information.
 
 ---
@@ -14,6 +14,7 @@ they wish to extend its functionality. Please refer to [Maintenance Policy](#mai
 - [Environment Setup](#environment-setup)
 - [Installation](#installation)
 - [Usage](#usage)
+- [LLM Providers](#llm-providers)
 - [Contributing](#contributing)
 - [Maintenance Policy](#maintenance-policy)
 - [License](#license)
@@ -22,49 +23,63 @@ they wish to extend its functionality. Please refer to [Maintenance Policy](#mai
 ---
 
 ## Introduction
-`arxiv_retriever` is a lightweight command-line tool designed to automate the retrieval of computer science papers from
-[ArXiv](https://arxiv.org/). The retrieval can be done using specified ArXiv computer science archive categories, full or partial 
-titles of papers, if available, or links to the papers. Paper retrieval can be refined by author.
+`arxiv_retriever` is a lightweight command-line tool designed to automate the retrieval, downloading, and
+summarization of research papers from [ArXiv](https://arxiv.org/). The retrieval can be done using specified ArXiv
+categories, full or partial titles of papers, or links to the papers. Paper retrieval can be refined by author.
+
+Papers can be summarized using multiple LLM providers — **Ollama** (local, default), **Claude** (Anthropic), or
+**Gemini** (Google) — directly from the terminal.
 
 **NOTE:** My tests indicate that when searching for a really long title, using the partial title and then refining by author
 yields better results, as opposed to searching with the full title or even searching with the full title and refining by
 author. However, the tests are not exhaustive.
 
-This tool is built using Python and leverages the Typer library for the command-line interface and the Python ElementTree
-XML package for parsing XML responses from the arXiv API. It can be useful for researchers, engineers, or students who
-want to quickly retrieve an ArXiv paper or keep abreast of latest research in their field without leaving their
-terminal/workstation.
+This tool is built using Python and leverages the Typer library for the command-line interface, Rich for enhanced
+terminal output, and the Python ElementTree XML package for parsing XML responses from the arXiv API. It can be useful
+for researchers, engineers, or students who want to quickly retrieve an ArXiv paper or keep abreast of latest research
+in their field without leaving their terminal/workstation.
 
-Although my current focus while building `arxiv_retriever` is the computer science archive, it can be easily 
+Although my current focus while building `arxiv_retriever` is the computer science archive, it can be easily
 used with categories from other areas on arxiv, e.g., `math.CO`.
 
 ## Features
-- Fetch the most recent papers specified ArXiv categories
+- Fetch the most recent papers from specified ArXiv categories
 - Search for papers on ArXiv using full or partial title
-- Refine fetch and search by author (s) for more precise results
+- Refine fetch and search by author(s) for more precise results
 - Specify logic for combination of multiple authors ('AND' or 'OR') during retrieval
 - Download papers after they are retrieved
-- View paper details including title, authors, abstract, publication date, and links to paper's abstract and pdf pages
-- Easy-to-use command-line interface built with Typer
+- **Summarize PDF papers** using LLM providers (Ollama, Claude, Gemini)
+  - Batch summarization of multiple papers at once
+  - Save summaries to JSON files
+- View paper details including title, authors, abstract, publication date, and links
+- **Rich terminal display** with styled panels, Markdown rendering, and color-coded output
+- Multi-provider LLM support with shorthand syntax (e.g., `--model claude`)
 - Configurable number of results to fetch
-- Built using only the standard library and tried and tested packages.
+- Easy-to-use command-line interface built with Typer
 
 ## Environment Setup
-You can optionally set an environment variable (an OpenAI API key) before using the program. This is used to authenticate
-with OpenAI for the paper summarization feature. If you do not want your papers summarized, you will not need to set the
-environment variable. Specify your choice when asked by the CLI. Specifying 'y' without the KEY set will lead to an error.
 
-### Optional Environment Variable
-- **Variable Name**: `OPENAI_API_KEY`
+Environment variables are used to configure LLM providers for the paper summarization feature. **Ollama** is the
+default provider and requires no API keys (it runs locally).
 
-### Setting the Environment Variable
+### Environment Variables
+
+| Variable | Provider | Required | Default |
+|----------|----------|----------|---------|
+| `ANTHROPIC_API_KEY` | Claude | Yes (for Claude) | — |
+| `GEMINI_API_KEY` | Gemini | Yes (for Gemini) | — |
+| `OLLAMA_BASE_URL` | Ollama | No | `http://localhost:11434` |
+| `ARXIV_RETRIEVER_DEFAULT_MODEL` | All | No | `ollama:llama3` |
+
+### Setting Environment Variables
 
 #### On Unix-like systems (Linux, macOS)
 In your terminal, run:
 ```shell
-export OPENAI_API_KEY=<key>
+export ANTHROPIC_API_KEY=<your-anthropic-key>
+export GEMINI_API_KEY=<your-gemini-key>
 ```
-To ensure this works across all shell instances, add the above line to your shell configuration file
+To ensure this works across all shell instances, add the above lines to your shell configuration file
 (e.g., `~/.bashrc`, `~/.zshrc`, or `~/.profile`).
 
 #### On Windows
@@ -72,21 +87,9 @@ To ensure this works across all shell instances, add the above line to your shel
 2. Click on the "Edit system environment variables" option.
 3. In the System Properties window, click on the "Environment Variables" button
 4. Under "User variables", click "New"
-5. Set the variable name as `OPENAI_API_KEY` and the value as your API key.
+5. Set the variable name and value for each key.
 
-### Verifying the Environment Variable
-
-To verify the environment variable is set correctly:
-
-- On Unix-like systems:
-    ```shell
-    echo $OPENAI_API_KEY
-    ```
-- On Windows (command prompt):
-  ```shell
-  echo %OPENAI_API_KEY%
-  ```
-**NOTE:** Keep your API key confidential and do not share it publicly.
+**NOTE:** Keep your API keys confidential and do not share them publicly.
 
 ## Installation
 
@@ -113,31 +116,23 @@ This method can be useful if you need a specific version or are in an environmen
 ### Install for Development and Testing
 
 To install the latest development version from source:
-1. Ensure you have Poetry installed. If not, install it by following the instructions at [https://python-poetry.org/docs/#installation](https://python-poetry.org/docs/#installation).
+1. Ensure you have [uv](https://docs.astral.sh/uv/) installed.
 2. Clone the repository:
     ```shell
     git clone https://github.com/MimicTester1307/arxiv_retriever.git
-    cd arxiv_retriever  
+    cd arxiv_retriever
     ```
 3. Install the project and its dependencies:
     ```shell
-    poetry install
+    uv sync
     ```
-4. (Optional) To activate the virtual environment created by Poetry:
+4. Run tests to ensure everything is set up correctly:
     ```shell
-    poetry shell
+    uv run pytest
     ```
-5. (Optional) Run tests to ensure everything is set up correctly:
+5. Run the CLI:
     ```shell
-    poetry run pytest
-    ```
-6. Build the project:
-    ```shell
-    poetry build
-    ```
-7. Install the wheel file using pip:
-    ```shell
-    pip install dist/arxiv_retriever-<version>-py3-none-any.whl
+    uv run axiv --help
     ```
 
 ## Usage
@@ -156,6 +151,7 @@ This distinction allows for a more concise command while maintaining a descripti
 - `fetch`: Fetch papers from ArXiv based on categories, refined by options.
 - `search`: Search for papers on ArXiv using title, refined by options.
 - `download`: Download papers from ArXiv using their links (PDF or abstract links).
+- `summarize`: Summarize one or more PDF papers using an LLM provider.
 - `version`: Display version information for arxiv_retriever and core dependencies.
 
 ### Sample Usage
@@ -224,15 +220,72 @@ Download papers using links:
     axiv download https://arxiv.org/pdf/2407.20214v1
     ```
 
+#### Summarize
+Summarize downloaded PDF papers using an LLM:
+```shell
+# Summarize a single paper (uses Ollama by default — local, no rate limits)
+axiv summarize paper.pdf
+
+# Summarize multiple papers
+axiv summarize paper1.pdf paper2.pdf
+
+# Summarize all PDFs in a directory
+axiv summarize ./arxiv_downloads/
+
+# Use a specific provider
+axiv summarize paper.pdf --model claude
+axiv summarize paper.pdf --model gemini
+
+# Use a specific model
+axiv summarize paper.pdf --model claude:claude-sonnet-4-6
+
+# Save summaries to JSON
+axiv summarize ./arxiv_downloads/ --save
+```
+
+## LLM Providers
+
+`arxiv_retriever` supports multiple LLM providers for paper summarization. **Ollama is the default** — it runs
+locally and has no API rate limits or costs.
+
+### Provider Format
+
+Use `--model provider:model_name` or just `--model provider` (uses the default model for that provider):
+
+| Provider | Default Model | Shorthand | Requires |
+|----------|--------------|-----------|----------|
+| Ollama | `llama3` | `--model ollama` | [Ollama](https://ollama.com/) running locally |
+| Claude | `claude-sonnet-4-6` | `--model claude` | `ANTHROPIC_API_KEY` env var |
+| Gemini | `gemini-3-flash-preview` | `--model gemini` | `GEMINI_API_KEY` env var |
+
+### Examples
+```shell
+# Use default (Ollama)
+axiv summarize paper.pdf
+
+# Use Claude with default model
+axiv summarize paper.pdf --model claude
+
+# Use Gemini with a specific model
+axiv summarize paper.pdf --model gemini:gemini-2.0-flash
+
+# Set a custom default model via environment variable
+export ARXIV_RETRIEVER_DEFAULT_MODEL=claude:claude-sonnet-4-6
+axiv summarize paper.pdf
+```
+
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request for any features, bug fixes, or
 enhancements.
 
 ### Note on Testing
 
-Currently, all 12 tests pass, but that required a bit of magic. Refactoring the tests for asynchrony was
-an interesting challenge. Discussions and contributions regarding the asynchronous implementation are particularly
-welcome.
+Currently, all 35 tests pass. Refactoring the tests for asynchrony was an interesting challenge.
+Discussions and contributions regarding the asynchronous implementation are particularly welcome.
+
+```shell
+uv run pytest
+```
 
 Contact me via email or leave a comment on the [Notion project tracker](https://clover-gymnast-aeb.notion.site/ArXiv-Retriever-630d06d96edf4bfea17248cc890c021e?pvs=4).
 
@@ -249,7 +302,11 @@ This project is licensed under the MIT license. See the LICENSE file for more de
 
 ## Acknowledgements
 - [Typer](https://typer.tiangolo.com/) for the command-line interface
+- [Rich](https://rich.readthedocs.io/) for enhanced terminal output (panels, tables, Markdown rendering)
 - [ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html) for XML parsing
 - [arXiv API](https://info.arxiv.org/help/api/basics.html) for providing access to paper metadata via a well-designed API
 - [Trio](https://trio.readthedocs.io/en/stable/index.html) and [HTTPx](https://www.python-httpx.org/) for the asynchronous features
+- [pypdf](https://pypdf.readthedocs.io/) for PDF text extraction
+- [Ollama](https://ollama.com/) for local LLM inference
+- [Anthropic](https://docs.anthropic.com/) and [Google GenAI](https://ai.google.dev/) SDKs for cloud LLM providers
 - [Dead Simple Python](https://www.amazon.de/-/en/Jason-C-McDonald/dp/1718500920) for helping me advance my knowledge of Python
