@@ -55,7 +55,7 @@ async def test_fetch_papers_success(mocker):
     categories = ['cs.AI', 'math.CO']
     limit = 5
     authors = None
-    expected_url = ("http://export.arxiv.org/api/query?search_query=cat:cs.AI+OR+cat:math.CO&sortBy=submittedDate"
+    expected_url = ("https://export.arxiv.org/api/query?search_query=cat:cs.AI+OR+cat:math.CO&sortBy=submittedDate"
                     "&sortOrder=descending&start=0&max_results=100")
 
     mock_response = mocker.Mock()
@@ -88,7 +88,7 @@ async def test_fetch_papers_with_authors(mocker):
     limit = 5
     authors = ['John Doe', 'Jane Smith']
     author_logic = 'AND'
-    expected_url = ('http://export.arxiv.org/api/query?search_query=cat:cs.AI+AND+('
+    expected_url = ('https://export.arxiv.org/api/query?search_query=cat:cs.AI+AND+('
                     'au:"John+Doe"+AND+au:"Jane+Smith")&sortBy=submittedDate&sortOrder=descending&start=0&max_results'
                     '=100')
     mock_response = mocker.Mock()
@@ -119,7 +119,7 @@ async def test_search_paper_by_title_success(mocker):
     # Arrange
     title = "Attention Is All You Need"
     limit = 5
-    expected_url = (f'http://export.arxiv.org/api/query?search_query=ti:"Attention+Is+All+You+Need"&sortBy=relevance'
+    expected_url = (f'https://export.arxiv.org/api/query?search_query=ti:"Attention+Is+All+You+Need"&sortBy=relevance'
                     f'&sortOrder=descending&start=0&max_results=100')
 
     mock_response = mocker.Mock()
@@ -152,7 +152,7 @@ async def test_search_paper_by_title_with_authors(mocker):
     limit = 5
     authors = ['Vaswani', 'Shazeer']
     author_logic = 'AND'
-    expected_url = (f'http://export.arxiv.org/api/query?search_query=ti:"Attention+Is+All+You+Need"+AND+('
+    expected_url = (f'https://export.arxiv.org/api/query?search_query=ti:"Attention+Is+All+You+Need"+AND+('
                     f'au:"Vaswani"+AND+au:"Shazeer")&sortBy=relevance&sortOrder=descending&start=0&max_results=100')
 
     mock_response = mocker.Mock()

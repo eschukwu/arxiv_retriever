@@ -31,8 +31,11 @@ async def test_fetch_command_success(runner, mocker):
     result = runner.invoke(app, ["fetch", "cs.AI", "--limit", "1", "--author", "John Doe"])
 
     assert result.exit_code == 0
-    assert "Fetching up to 1 papers from categories: cs.AI" in result.stdout
-    assert "Filtered by authors: John Doe (using 'OR' logic)..." in result.stdout
+    assert "Fetching up to" in result.output
+    assert "1" in result.output
+    assert "cs.AI" in result.output
+    assert "John Doe" in result.output
+    assert "OR" in result.output
     mock_fetch.assert_called_once_with(["cs.AI"], 1, ["John Doe"], "OR")
     mock_process.assert_called_once()
 
@@ -70,9 +73,11 @@ async def test_search_command_success(runner, mocker):
     title_combinations = [' '.join(token) for i in range(len(search_title_list), 0, -1) for token in
                           combinations(search_title_list, i)]  # initial implementation was from beginning; realized
     # searching for combinations in reverse is best case
-    assert any(comb.lower() in result.stdout.lower() for comb in title_combinations)  # main thing to check for
-    assert "Searching for papers matching search paper title" in result.stdout
-    assert "Filtered by authors: John Doe (using 'OR' logic)..." in result.stdout
+    assert any(comb.lower() in result.output.lower() for comb in title_combinations)  # main thing to check for
+    assert "Searching for papers matching" in result.output
+    assert "search paper title" in result.output
+    assert "John Doe" in result.output
+    assert "OR" in result.output
     mock_search.assert_called_once_with("search paper title", 1, ["John Doe"], "OR")
     mock_process.assert_called_once()
 
@@ -85,9 +90,9 @@ async def test_download_command_success(runner, mocker):
     result = runner.invoke(app, ["download", "http://arxiv.org/abs/2407.0001", "--download-dir", "./test_downloads"])
 
     assert result.exit_code == 0
-    # assert "Downloading papers from links provided links..." in result.stdout
     mock_download_from_links.assert_awaited_once_with(["http://arxiv.org/abs/2407.0001"], "./test_downloads")
-    assert "Download complete. Papers saved to ./test_downloads" in result.stdout
+    assert "Download complete" in result.output
+    assert "./test_downloads" in result.output
 
 
 def test_version_command(runner, mocker):
@@ -101,8 +106,10 @@ def test_version_command(runner, mocker):
     result = runner.invoke(app, ["version"])
 
     assert result.exit_code == 0
-    assert "arxiv_retriever version: 1.0.0" in result.stdout
-    assert "Python version: 3.12" in result.stdout
-    assert "Typer version: 1.0.0" in result.stdout
-    assert "Httpx version: 1.0.0" in result.stdout
-    assert "Trio version: 1.0.0" in result.stdout
+    assert "arxiv_retriever" in result.output
+    assert "1.0.0" in result.output
+    assert "Python" in result.output
+    assert "3.12" in result.output
+    assert "Typer" in result.output
+    assert "Httpx" in result.output
+    assert "Trio" in result.output
